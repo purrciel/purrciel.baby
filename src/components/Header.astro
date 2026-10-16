@@ -1,0 +1,39 @@
+---
+import Heart from './Heart.astro';
+
+const nav = [
+	{ href: '/garden', label: 'сад' },
+	{ href: '/lab', label: 'лаб' },
+	{ href: '/world', label: 'мир' },
+];
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
+---
+
+<header class="border-b-4 border-line bg-paper">
+	<div
+		class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-5 gap-y-2 px-4 py-3 sm:px-6"
+	>
+		<a href="/" class="flex items-center gap-2 font-serif text-[0.8rem] text-ink sm:text-sm">
+			<Heart class="heart" />
+			<span>PURRCIEL</span>
+		</a>
+
+		<nav class="flex items-center gap-4 sm:gap-6" aria-label="Основная">
+			{
+				nav.map((item) => (
+					<a
+						href={item.href}
+						class={`text-[0.72rem] uppercase tracking-[0.14em] transition-colors hover:text-choose ${
+							isCurrent(item.href) ? 'text-choose underline underline-offset-4' : 'text-soft'
+						}`}
+						aria-current={isCurrent(item.href) ? 'page' : undefined}
+					>
+						{item.label}
+					</a>
+				))
+			}
+		</nav>
+	</div>
+</header>

@@ -1,0 +1,33 @@
+---
+import MusicPlayer from './MusicPlayer.astro';
+
+interface Props {
+	/** Найденный трек из src/assets/audio/, если есть. */
+	track?: string | null;
+	/** Показывать плеер в подвале. На страницах-сценах он стоит рядом с котом. */
+	music?: boolean;
+}
+
+const { track = null, music = true } = Astro.props;
+const year = new Date().getFullYear();
+const isDev = import.meta.env.DEV;
+---
+
+<footer class="mt-auto border-t-4 border-line bg-paper">
+	<div
+		class="mx-auto flex max-w-4xl flex-col gap-2 px-4 py-5 text-[0.68rem] uppercase tracking-[0.14em] text-faint sm:flex-row sm:items-center sm:justify-between sm:px-6"
+	>
+		<p class="m-0">© {year} PURRCIEL.BABY</p>
+		<div class="flex flex-wrap items-center gap-x-5 gap-y-1">
+			<p class="m-0">спасено навсегда · astro &amp; bun</p>
+			{
+				music &&
+					(track ? (
+						<MusicPlayer track={track} variant="footer" />
+					) : (
+						isDev && <span class="m-0 opacity-70">♪ нет трека → src/assets/audio/</span>
+					))
+			}
+		</div>
+	</div>
+</footer>

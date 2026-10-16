@@ -1,0 +1,68 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Heart from '../../components/Heart.astro';
+import TagList from '../../components/TagList.astro';
+import { typeLabels } from '../../data/garden';
+import { formatShortDate } from '../../utils/date';
+
+const showDrafts = import.meta.env.DEV;
+const notes = (await getCollection('garden'))
+	.filter((note) => showDrafts || !note.data.draft)
+	.sort((a, b) => b.data.created.valueOf() - a.data.created.valueOf());
+
+const plural = (n: number) =>
+	n % 10 === 1 && n % 100 !== 11
+		? 'заметка'
+		: [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)
+			? 'заметки'
+			: 'заметок';
+---
+
+<Layout
+	title="САД — PURRCIEL.BABY"
+	description="Заметки, идеи, аниме, фильмы и технические находки с purrciel.baby."
+>
+	<div class="flex flex-col gap-8">
+		<PageHeader
+			eyebrow="раздел"
+			title="Сад"
+			description="Заметки, идеи, аниме, фильмы и технические находки. Всё, что ещё растёт — специально держится свободно."
+		/>
+
+		<p class="meta">{notes.length} {plural(notes.length)} · сначала новые</p>
+
+		{
+			notes.length > 0 ? (
+				<div class="box">
+					<nav class="menu menu--v" data-menu="v" aria-label="Заметки">
+						{notes.map((note) => (
+							<a class="choice items-start" href={`/garden/${note.id}`}>
+								<Heart class="heart" />
+								<span class="flex flex-col gap-1.5">
+									<span class="flex flex-wrap items-baseline gap-x-3">
+										<span>{note.data.title}</span>
+										{note.data.draft && <span class="meta text-accent">черновик</span>}
+									</span>
+									<span class="text-[0.98rem] leading-relaxed text-soft">
+										{note.data.description}
+									</span>
+									<span class="flex flex-wrap items-center gap-x-3 gap-y-1">
+										<span class="meta">
+											{formatShortDate(note.data.created)} ·{' '}
+											{typeLabels[note.data.type] ?? note.data.type}
+										</span>
+										<TagList tags={note.data.tags} />
+									</span>
+								</span>
+							</a>
+						))}
+					</nav>
+				</div>
+			) : (
+				<p class="text-soft">Пока ничего не посажено.</p>
+			)
+		}
+	</div>
+</Layout>

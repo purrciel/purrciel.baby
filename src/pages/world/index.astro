@@ -1,0 +1,510 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Heart from '../../components/Heart.astro';
+import PixelCat from '../../components/PixelCat.astro';
+import SectionLabel from '../../components/SectionLabel.astro';
+import MusicPlayer from '../../components/MusicPlayer.astro';
+import { formatShortDate } from '../../utils/date';
+import { getTrack } from '../../utils/audio';
+
+const track = getTrack();
+
+const showDrafts = import.meta.env.DEV;
+const latest = (await getCollection('garden'))
+	.filter((note) => showDrafts || !note.data.draft)
+	.sort((a, b) => b.data.created.valueOf() - a.data.created.valueOf())
+	.slice(0, 5);
+
+// fallback для no-JS; с JS фраза выбирается по времени суток
+const line =
+	'* мур. это purrciel.baby — маленький мир. тут нечего проходить, только смотреть. выбери, куда пойти.';
+
+// что говорит кот, когда наводишь на пункт меню
+const menu = [
+	{ href: '/garden', label: 'САД', say: '* сад. тут растут заметки. некоторые ещё не проросли.' },
+	{ href: '/lab', label: 'ЛАБ', say: '* лаб. здесь что-то гудит и иногда ломается. не трогай красное.' },
+	{ href: '/world', label: 'МИР', say: '* мир. комната, вещи, ссылки. заходи, не разувайся.' },
+	{ href: '#now', label: 'СЕЙЧАС', say: '* сейчас. посмотреть, чем тут занимаются прямо в эту секунду.' },
+];
+
+// ✎ правь вручную, пока нет автоподтягивания с рабочего стола
+const now = [
+	{ k: 'ПИШУ', v: 'Starhaven · Elixir' },
+	{ k: 'КОПАЮ', v: 'Rust NIF, rstar' },
+	{ k: 'СЛУШАЮ', v: '— ещё не подключено —' },
+];
+---
+
+<Layout
+	title="МИР — PURRCIEL.BABY"
+	description="Маленький личный мир: сад заметок, лаборатория, комната и пиксельный кот."
+	bleed
+>
+	<section class="battle">
+		<div class="hud" aria-hidden="true">
+			<span>PURRCIEL</span>
+			<span>LV 01</span>
+			<span class="hud__hp">HP <i class="hud__bar"><b></b></i> ∞</span>
+			<span class="hud__clock" data-clock>--:--</span>
+		</div>
+
+		<div class="battle__stage">
+			<div class="stage__hero">
+				<button class="cat" type="button" data-cat aria-label="Потрогать кота">
+					<PixelCat class="bob h-auto w-[min(200px,46vw)]" />
+				</button>
+				<MusicPlayer track={track} class="stage__music" />
+			</div>
+			<p class="battle__enemy" data-enemy>ЗАБРОШЕННЫЙ КОТ</p>
+		</div>
+
+		<div class="battle__box box">
+			<p class="battle__text">
+				<span class="sr-only">{line}</span>
+				<span data-type aria-hidden="true">{line}</span>
+			</p>
+
+			<nav class="battle__menu menu" data-menu="h" aria-label="Разделы">
+				{
+					menu.map((m, i) => (
+						<a class="choice" href={m.href} data-say={m.say} data-key={i + 1}>
+							<Heart class="heart" />
+							{m.label}
+						</a>
+					))
+				}
+			</nav>
+
+			<span class="next hidden" aria-hidden="true">▼</span>
+		</div>
+
+		<div class="battle__foot">
+			<span>[1–4] — быстрый переход</span>
+			<button class="snd" type="button" data-sound aria-pressed="false">ЗВУК: ВЫКЛ</button>
+		</div>
+	</section>
+
+	<div class="wrap">
+		<section class="flex flex-col gap-4">
+			<SectionLabel label="свежее из сада" />
+			{
+				latest.length > 0 ? (
+					<div class="box">
+						<nav class="menu menu--v" data-menu="v" aria-label="Свежие заметки">
+							{latest.map((note) => (
+								<a class="choice justify-between gap-4" href={`/garden/${note.id}`}>
+									<Heart class="heart" />
+									<span>{note.data.title}</span>
+									<span class="meta shrink-0">{formatShortDate(note.data.created)}</span>
+								</a>
+							))}
+						</nav>
+					</div>
+				) : (
+					<p class="text-soft">Пока ничего не посажено.</p>
+				)
+			}
+		</section>
+
+		<section id="now" class="flex flex-col gap-4">
+			<SectionLabel label="сейчас" />
+			<div class="box now">
+				<dl class="now__list">
+					<div class="now__row">
+						<dt>У МЕНЯ</dt>
+						<dd><span data-clock-long>—</span></dd>
+					</div>
+					{
+						now.map((n) => (
+							<div class="now__row">
+								<dt>{n.k}</dt>
+								<dd>{n.v}</dd>
+							</div>
+						))
+					}
+				</dl>
+				<p class="now__note text-soft">
+					Пока вручную. Однажды это будет подтягиваться само.
+				</p>
+			</div>
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.battle {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 1.2rem;
+		width: 100%;
+		max-width: 900px;
+		min-height: 82svh;
+		margin: 0 auto;
+		padding: 1.2rem 1rem 1.6rem;
+	}
+
+	/* лёгкие CRT-линии поверх сцены */
+	.battle::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: repeating-linear-gradient(
+			to bottom,
+			transparent 0,
+			transparent 2px,
+			rgba(255, 255, 255, 0.03) 3px
+		);
+	}
+
+	.hud {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem 1.4rem;
+		font-family: var(--font-serif);
+		font-size: 0.62rem;
+		letter-spacing: 0.08em;
+		color: var(--white);
+		opacity: 0.85;
+	}
+	.hud__clock {
+		margin-left: auto;
+		font-variant-numeric: tabular-nums;
+	}
+	.hud__bar {
+		display: inline-block;
+		width: 4.5rem;
+		height: 0.7rem;
+		margin: 0 0.35rem;
+		vertical-align: -0.05rem;
+		background: rgba(255, 255, 255, 0.15);
+	}
+	.hud__bar b {
+		display: block;
+		height: 100%;
+		width: 100%;
+		background: var(--white);
+	}
+
+	.battle__stage {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1.1rem;
+	}
+
+	/* кот и кнопка музыки — рядом */
+	.stage__hero {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem 1.8rem;
+	}
+
+	.cat {
+		padding: 0;
+		border: 0;
+		background: none;
+		cursor: pointer;
+		line-height: 0;
+		-webkit-tap-highlight-color: transparent;
+	}
+	.cat:focus-visible {
+		outline: 2px dashed var(--white);
+		outline-offset: 8px;
+	}
+	.cat.poke {
+		animation: poke 0.28s steps(4);
+	}
+	.cat.mercy {
+		filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.55));
+	}
+	.battle.hover-cat .cat {
+		transform: translateY(-3px);
+	}
+
+	@keyframes poke {
+		0% { transform: translate(0, 0); }
+		25% { transform: translate(-5px, 2px); }
+		50% { transform: translate(5px, -2px); }
+		75% { transform: translate(-3px, 1px); }
+		100% { transform: translate(0, 0); }
+	}
+
+	.battle__enemy {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 0.7rem;
+		letter-spacing: 0.06em;
+		color: var(--white);
+	}
+
+	.battle__box {
+		position: relative;
+		width: 100%;
+	}
+
+	.battle__text {
+		margin: 0;
+		min-height: 4.2em;
+		font-size: 1.2rem;
+		line-height: 1.6;
+		color: var(--white);
+	}
+	.battle__text [data-type]::after {
+		content: '';
+		display: inline-block;
+		width: 0.55em;
+		height: 1em;
+		margin-left: 0.15em;
+		vertical-align: -0.12em;
+		background: var(--white);
+		opacity: 0;
+	}
+	.battle__text [data-type].typing::after {
+		opacity: 1;
+		animation: blink 0.7s steps(1) infinite;
+	}
+
+	.battle__menu {
+		margin-top: 1.4rem;
+		gap: 0.5rem 1.4rem;
+	}
+
+	.next {
+		position: absolute;
+		right: 1.1rem;
+		bottom: 0.7rem;
+		font-size: 0.9rem;
+		color: var(--white);
+		animation: bounce 0.9s steps(2) infinite;
+	}
+
+	.battle__foot {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		font-family: var(--font-serif);
+		font-size: 0.55rem;
+		letter-spacing: 0.06em;
+		color: var(--white);
+		opacity: 0.6;
+	}
+	.snd {
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		letter-spacing: inherit;
+		color: inherit;
+		cursor: pointer;
+	}
+	.snd:hover,
+	.snd:focus-visible,
+	.snd[aria-pressed='true'] {
+		opacity: 1;
+		text-decoration: underline;
+	}
+
+	.wrap {
+		display: flex;
+		flex-direction: column;
+		gap: 2.6rem;
+		width: 100%;
+		max-width: 900px;
+		margin: 0 auto;
+		padding: 0 1rem 4rem;
+	}
+
+	.now__list {
+		display: grid;
+		gap: 0.55rem;
+		margin: 0;
+	}
+	.now__row {
+		display: flex;
+		gap: 1rem;
+		align-items: baseline;
+		border-bottom: 1px dotted rgba(255, 255, 255, 0.2);
+		padding-bottom: 0.45rem;
+	}
+	.now__row dt {
+		flex: 0 0 6.5rem;
+		font-family: var(--font-serif);
+		font-size: 0.62rem;
+		letter-spacing: 0.08em;
+		color: var(--white);
+		opacity: 0.7;
+	}
+	.now__row dd {
+		margin: 0;
+		font-variant-numeric: tabular-nums;
+	}
+	.now__note {
+		margin: 0.9rem 0 0;
+		font-size: 0.85rem;
+	}
+
+	@keyframes blink { 50% { opacity: 0; } }
+	@keyframes bounce { 50% { transform: translateY(3px); } }
+
+	@media (prefers-reduced-motion: reduce) {
+		.cat.poke, .next, .battle__text [data-type].typing::after {
+			animation: none;
+		}
+	}
+</style>
+
+<script>
+	const battle = document.querySelector<HTMLElement>('.battle')!;
+	const text = document.querySelector<HTMLElement>('[data-type]')!;
+	const sr = document.querySelector<HTMLElement>('.battle__text .sr-only');
+	const next = document.querySelector<HTMLElement>('.next');
+	const cat = document.querySelector<HTMLElement>('[data-cat]')!;
+	const enemy = document.querySelector<HTMLElement>('[data-enemy]')!;
+	const soundBtn = document.querySelector<HTMLButtonElement>('[data-sound]')!;
+	const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	/* ---------- звук (по умолчанию выключен) ---------- */
+	let soundOn = false;
+	let ac: AudioContext | null = null;
+	function blip() {
+		if (!soundOn) return;
+		ac ??= new AudioContext();
+		const o = ac.createOscillator();
+		const g = ac.createGain();
+		o.type = 'square';
+		o.frequency.value = 520 + Math.random() * 90;
+		g.gain.value = 0.015;
+		o.connect(g).connect(ac.destination);
+		o.start();
+		o.stop(ac.currentTime + 0.035);
+	}
+	soundBtn.addEventListener('click', () => {
+		soundOn = !soundOn;
+		soundBtn.setAttribute('aria-pressed', String(soundOn));
+		soundBtn.textContent = soundOn ? 'ЗВУК: ВКЛ' : 'ЗВУК: ВЫКЛ';
+		if (soundOn) blip();
+	});
+
+	/* ---------- печатная машинка ---------- */
+	let run = 0;
+	function say(msg: string, announce = false) {
+		const id = ++run;
+		next?.classList.add('hidden');
+		if (announce && sr) sr.textContent = msg;
+		if (reduce) {
+			text.textContent = msg;
+			text.classList.remove('typing');
+			next?.classList.remove('hidden');
+			return;
+		}
+		text.textContent = '';
+		text.classList.add('typing');
+		let i = 0;
+		const step = () => {
+			if (id !== run) return;
+			const ch = msg[i++];
+			text.textContent += ch;
+			if (ch !== ' ') blip();
+			if (i >= msg.length) {
+				text.classList.remove('typing');
+				next?.classList.remove('hidden');
+				return;
+			}
+			const pause = '.,—!?'.includes(ch) ? 170 : 24;
+			setTimeout(step, pause);
+		};
+		step();
+	}
+
+	/* ---------- приветствие по времени суток ---------- */
+	const h = new Date().getHours();
+	const greet =
+		h < 5
+			? '* мур. ты не спишь. кот тоже. это purrciel.baby — тихий мир для тех, кто не спит. выбери, куда пойти.'
+			: h < 12
+				? '* мур. доброе утро. это purrciel.baby — маленький мир. тут нечего проходить, только смотреть. выбери, куда пойти.'
+				: h < 18
+					? '* мур. это purrciel.baby — маленький мир. тут нечего проходить, только смотреть. выбери, куда пойти.'
+					: '* мур. вечер. это purrciel.baby — маленький мир. кот уже включил подсветку. выбери, куда пойти.';
+	say(greet, true);
+
+	/* ---------- реакции на меню ---------- */
+	document.querySelectorAll<HTMLAnchorElement>('.battle__menu .choice').forEach((a) => {
+		const show = () => {
+			const m = a.dataset.say;
+			if (m) say(m);
+			battle.classList.add('hover-cat');
+		};
+		const hide = () => battle.classList.remove('hover-cat');
+		a.addEventListener('mouseenter', show);
+		a.addEventListener('focus', show);
+		a.addEventListener('mouseleave', hide);
+		a.addEventListener('blur', hide);
+	});
+
+	/* быстрые клавиши 1–4 */
+	addEventListener('keydown', (e) => {
+		if (e.ctrlKey || e.metaKey || e.altKey) return;
+		const t = e.target as HTMLElement;
+		if (t && /INPUT|TEXTAREA|SELECT/.test(t.tagName)) return;
+		const a = document.querySelector<HTMLAnchorElement>(`.battle__menu [data-key="${e.key}"]`);
+		if (a) a.click();
+	});
+
+	/* ---------- потыкать кота ---------- */
+	const pokes = [
+		'* ты потрогал кота. кот не против.',
+		'* ты потрогал кота ещё раз. мурр.',
+		'* кот смотрит на тебя. долго. ты тоже.',
+		'* кот делает вид, что так и надо.',
+		'* кот уронил бы что-нибудь со стола, но стола нет.',
+		'* кот чувствует, что вы стали ближе.',
+		'* ЗАБРОШЕННЫЙ КОТ больше не заброшенный.',
+	];
+	let n = 0;
+	cat.addEventListener('click', () => {
+		cat.classList.remove('poke');
+		void cat.offsetWidth;
+		cat.classList.add('poke');
+		say(pokes[Math.min(n, pokes.length - 1)]);
+		n++;
+		if (n >= pokes.length) {
+			cat.classList.add('mercy');
+			enemy.textContent = 'ДРУГ';
+		}
+	});
+
+	/* ---------- konami ---------- */
+	const code = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+	let pos = 0;
+	addEventListener('keydown', (e) => {
+		pos = e.key === code[pos] ? pos + 1 : e.key === code[0] ? 1 : 0;
+		if (pos === code.length) {
+			pos = 0;
+			cat.classList.add('mercy');
+			enemy.textContent = 'ТЫ НАШЁЛ СЕКРЕТ';
+			say('* ты ввёл древний код. кот одобряет. больше ничего не произошло. пока.');
+		}
+	});
+
+	/* ---------- часы ---------- */
+	const clocks = document.querySelectorAll<HTMLElement>('[data-clock]');
+	const long = document.querySelector<HTMLElement>('[data-clock-long]');
+	const tick = () => {
+		const d = new Date();
+		const hm = d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+		clocks.forEach((c) => (c.textContent = hm));
+		if (long) {
+			long.textContent = d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }) + ' · ' + hm;
+		}
+	};
+	tick();
+	setInterval(tick, 15000);
+</script>

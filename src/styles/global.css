@@ -1,0 +1,336 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Шрифты. Локальные файлы в /public/fonts — без внешних зависимостей.
+   Pixelify Sans — читаемый пиксель для текста и диалогов.
+   Press Start 2P — блочный пиксель для логотипа, меню и HUD.
+------------------------------------------------------------------ */
+@font-face {
+	font-family: "Pixelify Sans";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("/fonts/pixelify-sans-400.ttf") format("truetype");
+}
+@font-face {
+	font-family: "Pixelify Sans";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url("/fonts/pixelify-sans-700.ttf") format("truetype");
+}
+@font-face {
+	font-family: "Press Start 2P";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("/fonts/press-start-2p.ttf") format("truetype");
+}
+
+/* ------------------------------------------------------------------
+   Undertale: чёрный / белый / красный. Жёлтый — только для выбора.
+   Старые имена токенов сохранены, чтобы страницы перекрасились сами.
+------------------------------------------------------------------ */
+:root {
+	--black: #000000;
+	--white: #ffffff;
+	--grey: #9a9a9a;
+	--red: #ff2b2b;
+	--yellow: #ffe600;
+
+	--paper: var(--black);
+	--raised: #0c0c0c;
+	--ink: var(--white);
+	--soft: #d2d2d2;
+	--faint: #8a8a8a;
+	--line: var(--white);
+	--accent: var(--red);
+
+	color-scheme: dark;
+}
+
+@theme inline {
+	--font-sans: "Pixelify Sans", ui-monospace, monospace;
+	--font-serif: "Press Start 2P", ui-monospace, monospace;
+	--font-mono: "Pixelify Sans", ui-monospace, monospace;
+
+	--color-paper: var(--paper);
+	--color-raised: var(--raised);
+	--color-ink: var(--ink);
+	--color-soft: var(--soft);
+	--color-faint: var(--faint);
+	--color-line: var(--line);
+	--color-accent: var(--accent);
+	--color-heart: var(--red);
+	--color-choose: var(--yellow);
+}
+
+@layer base {
+	html {
+		-webkit-text-size-adjust: 100%;
+	}
+
+	body {
+		background-color: var(--black);
+		color: var(--white);
+		font-family: var(--font-sans);
+		font-size: 1.15rem;
+		line-height: 1.7;
+	}
+
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-sans);
+		font-weight: 700;
+		line-height: 1.25;
+		letter-spacing: 0;
+	}
+
+	::selection {
+		background-color: var(--yellow);
+		color: var(--black);
+	}
+
+	:focus-visible {
+		outline: 3px solid var(--yellow);
+		outline-offset: 3px;
+	}
+
+	svg,
+	img {
+		image-rendering: pixelated;
+	}
+}
+
+@layer components {
+	/* мелкая 8-битная подпись */
+	.meta {
+		font-family: var(--font-sans);
+		font-size: 0.72rem;
+		line-height: 1.5;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	/* «диалоговое окно» — белая двойная рамка, чёрный внутри */
+	.box {
+		position: relative;
+		background-color: var(--black);
+		border: 4px solid var(--white);
+		border-radius: 10px;
+		box-shadow:
+			inset 0 0 0 4px var(--black),
+			inset 0 0 0 8px var(--white);
+		padding: 1.5rem 1.6rem;
+	}
+
+	/* сердечко-душа */
+	.heart {
+		display: inline-block;
+		width: 0.95em;
+		height: auto;
+		color: var(--red);
+	}
+
+	/* меню с сердечком-душой */
+	.menu {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem 1.6rem;
+	}
+	.menu--v {
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	.choice {
+		position: relative;
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.6ch;
+		padding-left: 1.9em;
+		font-family: var(--font-serif);
+		font-size: 0.9rem;
+		line-height: 1.6;
+		color: var(--white);
+		text-decoration: none;
+		background: none;
+		border: 0;
+		cursor: pointer;
+	}
+	.menu--v .choice {
+		display: flex;
+		width: 100%;
+		align-items: baseline;
+		font-family: var(--font-sans);
+		font-size: 1.15rem;
+	}
+
+	.choice .heart {
+		position: absolute;
+		left: 0;
+		top: 0.5em;
+		opacity: 0;
+		color: var(--red);
+	}
+	/* подсветка выбранного: слово жёлтеет, сердечко появляется */
+	.choice[data-active] {
+		color: var(--yellow);
+	}
+	.choice[data-active] .heart {
+		opacity: 1;
+	}
+	/* без JS сердечко стоит на первом пункте (меню без data-ready) */
+	.menu:not([data-ready]) .choice:first-child .heart {
+		opacity: 1;
+	}
+
+	/* кнопка */
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6ch;
+		font-family: var(--font-serif);
+		font-size: 0.85rem;
+		line-height: 1.4;
+		color: var(--white);
+		background-color: var(--black);
+		border: 4px solid var(--white);
+		border-radius: 8px;
+		padding: 0.7rem 0.95rem;
+		text-decoration: none;
+		cursor: pointer;
+	}
+	.btn:hover {
+		color: var(--yellow);
+		border-color: var(--yellow);
+	}
+
+	.prose-link {
+		color: var(--yellow);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	/* мигание индикатора «дальше» */
+	.next {
+		animation: px-blink 1s steps(1, end) infinite;
+	}
+	@keyframes px-blink {
+		50% {
+			opacity: 0;
+		}
+	}
+
+	/* дёрганье пиксельного спрайта */
+	.bob {
+		animation: px-bob 1.6s steps(2, end) infinite;
+	}
+	@keyframes px-bob {
+		50% {
+			transform: translateY(-6px);
+		}
+	}
+
+	/* тело заметки — читаемый пиксель */
+	.prose {
+		color: var(--soft);
+		font-size: 1.1rem;
+		line-height: 1.8;
+	}
+	.prose > * + * {
+		margin-top: 1.1em;
+	}
+	.prose h2,
+	.prose h3 {
+		color: var(--white);
+	}
+	.prose h2 {
+		margin-top: 2em;
+		font-size: 1.05rem;
+	}
+	.prose h3 {
+		margin-top: 1.6em;
+		font-size: 0.95rem;
+	}
+	.prose strong {
+		color: var(--white);
+		font-weight: 700;
+	}
+	.prose a {
+		color: var(--yellow);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+	.prose ul {
+		list-style: none;
+	}
+	.prose ul > li {
+		position: relative;
+		padding-left: 1.3em;
+		margin-top: 0.4em;
+	}
+	.prose ul > li::before {
+		content: "*";
+		position: absolute;
+		left: 0;
+		color: var(--red);
+	}
+	.prose ol {
+		list-style: decimal;
+		padding-left: 1.6em;
+	}
+	.prose ol > li {
+		margin-top: 0.4em;
+	}
+	.prose li::marker {
+		color: var(--red);
+	}
+	.prose code {
+		font-family: var(--font-sans);
+		font-size: 0.95em;
+		color: var(--yellow);
+		background-color: var(--raised);
+		border: 2px solid var(--line);
+		padding: 0.05em 0.3em;
+	}
+	.prose pre {
+		background-color: var(--raised);
+		border: 4px solid var(--white);
+		border-radius: 8px;
+		padding: 1em 1.1em;
+		overflow-x: auto;
+		font-size: 0.95em;
+		line-height: 1.7;
+	}
+	.prose pre code {
+		background: none;
+		border: 0;
+		padding: 0;
+		color: var(--soft);
+	}
+	.prose blockquote {
+		border-left: 4px solid var(--red);
+		padding-left: 1em;
+		color: var(--white);
+	}
+	.prose hr {
+		border: 0;
+		border-top: 4px solid var(--white);
+		margin: 2.2em 0;
+	}
+	.prose img {
+		border: 4px solid var(--white);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation: none !important;
+		transition-duration: 0.01ms !important;
+	}
+}

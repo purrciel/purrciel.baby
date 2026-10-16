@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Heart from '../components/Heart.astro';
+---
+
+<Layout
+	title="Не найдено — PURRCIEL.BABY"
+	description="Страницы, которую вы искали, не существует."
+>
+	<div class="flex flex-col gap-6">
+		<p class="meta m-0">* ошибка 404</p>
+		<h1 class="text-base sm:text-xl">Здесь ничего не растёт</h1>
+
+		<div class="box">
+			<p class="m-0 text-soft">
+				Страницы, которую вы искали, нет — её могли переименовать, или её вообще не
+				было.
+			</p>
+
+			<nav class="menu menu--v mt-6" data-menu="v" aria-label="Куда дальше">
+				<a class="choice" href="/garden"><Heart class="heart" />сад</a>
+				<a class="choice" href="/lab"><Heart class="heart" />лаборатория</a>
+				<a class="choice" href="/"><Heart class="heart" />на главную</a>
+			</nav>
+		</div>
+	</div>
+</Layout>

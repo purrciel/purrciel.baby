@@ -1,0 +1,62 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import TagList from '../../components/TagList.astro';
+import { typeLabels } from '../../data/garden';
+import { formatDate } from '../../utils/date';
+
+export async function getStaticPaths() {
+	const notes = await getCollection('garden');
+
+	// В продакшене черновики не генерируются вовсе — их адреса попадают на 404.
+	const visible = import.meta.env.PROD
+		? notes.filter((note) => !note.data.draft)
+		: notes;
+
+	return visible.map((note) => ({
+		params: { id: note.id },
+		props: { note },
+	}));
+}
+
+interface Props {
+	note: CollectionEntry<'garden'>;
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+const { title, description, created, updated, tags, type, draft } = note.data;
+
+const words = (note.body ?? '').trim().split(/\s+/).filter(Boolean).length;
+const minutes = Math.max(1, Math.round(words / 200));
+---
+
+<Layout title={`${title} — PURRCIEL.BABY`} description={description}>
+	<article class="flex flex-col gap-6">
+		<a href="/garden" class="meta hover:text-choose">← назад в сад</a>
+
+		<header class="flex flex-col gap-3">
+			<h1 class="text-base sm:text-xl">{title}</h1>
+			<p class="max-w-prose text-soft">{description}</p>
+
+			<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+				<time datetime={created.toISOString()} class="meta">{formatDate(created)}</time>
+				<span class="meta">{minutes} мин чтения</span>
+				<span class="meta">{typeLabels[type] ?? type}</span>
+				{draft && <span class="meta text-accent">черновик</span>}
+			</div>
+
+			<TagList tags={tags} />
+		</header>
+
+		<div class="box prose max-w-prose">
+			<Content />
+		</div>
+
+		<footer class="flex flex-col gap-2">
+			{updated && <p class="meta">обновлено {formatDate(updated)}</p>}
+			<a href="/garden" class="meta hover:text-choose">← назад в сад</a>
+		</footer>
+	</article>
+</Layout>

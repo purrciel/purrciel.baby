@@ -1,0 +1,167 @@
+---
+interface Props {
+	/** Путь к треку. Если null — плеер не рендерится. */
+	track?: string | null;
+	/** hero — крупная кнопка рядом с котом, footer — мелкая ссылка в подвале. */
+	variant?: 'hero' | 'footer';
+	class?: string;
+}
+
+const { track = null, variant = 'hero', class: className } = Astro.props;
+---
+
+{
+	track && (
+		<span class:list={['music', `music--${variant}`, className]}>
+			<audio data-music-audio src={track} loop preload="metadata"></audio>
+			<button
+				class="music__btn"
+				type="button"
+				data-music
+				aria-pressed="false"
+				title="Фоновая музыка"
+			>
+				<span class="music__icon" aria-hidden="true">
+					♪
+				</span>
+				<span class="music__label" data-music-label>
+					музыка: выкл
+				</span>
+			</button>
+		</span>
+	)
+}
+
+<style>
+	.music {
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.music__btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.7ch;
+		font-family: var(--font-sans);
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	/* крупная кнопка рядом с котом */
+	.music--hero .music__btn {
+		padding: 0.75rem 1.15rem;
+		font-size: 1rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: var(--white);
+		background-color: var(--black);
+		border: 4px solid var(--white);
+		border-radius: 8px;
+		box-shadow: 0 0 0 4px var(--black);
+	}
+
+	.music--hero .music__icon {
+		font-size: 1.35em;
+		line-height: 1;
+	}
+
+	/* подсказка: пока музыка выключена — значок подмигивает */
+	.music--hero .music__btn[aria-pressed='false'] .music__icon {
+		animation: music-hint 1.3s steps(1, end) infinite;
+	}
+
+	@keyframes music-hint {
+		50% {
+			opacity: 0.25;
+		}
+	}
+
+	.music__btn:hover,
+	.music__btn:focus-visible {
+		color: var(--yellow);
+		border-color: var(--yellow);
+	}
+
+	.music--hero .music__btn[aria-pressed='true'] {
+		color: var(--yellow);
+		border-color: var(--yellow);
+	}
+
+	.music--hero .music__btn[aria-pressed='true'] .music__icon {
+		animation: none;
+	}
+
+	/* мелкий вариант в подвале */
+	.music--footer .music__btn {
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		font-weight: inherit;
+		letter-spacing: inherit;
+		color: inherit;
+	}
+
+	.music--footer .music__btn:hover,
+	.music--footer .music__btn:focus-visible,
+	.music--footer .music__btn[aria-pressed='true'] {
+		color: var(--yellow);
+		text-decoration: underline;
+	}
+
+	.music__btn:disabled {
+		cursor: default;
+		opacity: 0.6;
+		text-decoration: none;
+	}
+</style>
+
+<script>
+	const audio = document.querySelector<HTMLAudioElement>('[data-music-audio]');
+	const btn = document.querySelector<HTMLButtonElement>('[data-music]');
+
+	if (audio && btn) {
+		const label = btn.querySelector<HTMLElement>('[data-music-label]');
+		const KEY = 'purrciel:music';
+		audio.volume = 0.35;
+
+		const set = (on: boolean) => {
+			btn.setAttribute('aria-pressed', String(on));
+			if (label) label.textContent = on ? 'музыка: вкл' : 'музыка: выкл';
+		};
+		set(false);
+
+		const start = async () => {
+			try {
+				await audio.play();
+				set(true);
+				localStorage.setItem(KEY, 'on');
+			} catch {
+				// автовоспроизведение заблокировано — ждём клика
+				set(false);
+			}
+		};
+
+		const stop = () => {
+			audio.pause();
+			set(false);
+			localStorage.setItem(KEY, 'off');
+		};
+
+		btn.addEventListener('click', () => {
+			if (audio.paused) void start();
+			else stop();
+		});
+
+		audio.addEventListener('play', () => set(true));
+		audio.addEventListener('pause', () => set(false));
+		audio.addEventListener('error', () => {
+			btn.disabled = true;
+			if (label) label.textContent = 'нет файла';
+			btn.title = 'Положи трек в src/assets/audio/';
+		});
+
+		// если музыка была включена — пытаемся продолжить на следующей странице
+		if (localStorage.getItem(KEY) === 'on') void start();
+	}
+</script>
