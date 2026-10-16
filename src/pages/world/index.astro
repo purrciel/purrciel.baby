@@ -7,6 +7,8 @@ import SectionLabel from '../../components/SectionLabel.astro';
 import MusicPlayer from '../../components/MusicPlayer.astro';
 import { formatShortDate } from '../../utils/date';
 import { getTrack } from '../../utils/audio';
+import menuItems from '../../data/menu.json';
+import activity from '../../data/activity.json';
 
 const track = getTrack();
 
@@ -20,20 +22,9 @@ const latest = (await getCollection('garden'))
 const line =
 	'* мур. это purrciel.baby — маленький мир. тут нечего проходить, только смотреть. выбери, куда пойти.';
 
-// что говорит кот, когда наводишь на пункт меню
-const menu = [
-	{ href: '/garden', label: 'САД', say: '* сад. тут растут заметки. некоторые ещё не проросли.' },
-	{ href: '/lab', label: 'ЛАБ', say: '* лаб. здесь что-то гудит и иногда ломается. не трогай красное.' },
-	{ href: '/world', label: 'МИР', say: '* мир. комната, вещи, ссылки. заходи, не разувайся.' },
-	{ href: '#now', label: 'СЕЙЧАС', say: '* сейчас. посмотреть, чем тут занимаются прямо в эту секунду.' },
-];
-
-// ✎ правь вручную, пока нет автоподтягивания с рабочего стола
-const now = [
-	{ k: 'ПИШУ', v: 'Starhaven · Elixir' },
-	{ k: 'КОПАЮ', v: 'Rust NIF, rstar' },
-	{ k: 'СЛУШАЮ', v: '— ещё не подключено —' },
-];
+// ✎ данные лежат в src/data — правь JSON, код трогать не нужно
+const menu = menuItems;
+const now = activity.rows;
 ---
 
 <Layout
@@ -124,9 +115,7 @@ const now = [
 						))
 					}
 				</dl>
-				<p class="now__note text-soft">
-					Пока вручную. Однажды это будет подтягиваться само.
-				</p>
+				<p class="now__note text-soft">{activity.note}</p>
 			</div>
 		</section>
 	</div>

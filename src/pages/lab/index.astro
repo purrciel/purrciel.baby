@@ -1,7 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PageHeader from '../../components/PageHeader.astro';
-import { experiments } from '../../data/lab';
+import lab from '../../data/lab.json';
+
+// ✎ список экспериментов — правь src/data/lab.json
+const experiments: { title: string; state: string }[] = lab;
 ---
 
 <Layout
@@ -15,20 +18,24 @@ import { experiments } from '../../data/lab';
 			description="Эксперименты и мелкие программы. Почти все начинаются как любопытство в воскресенье, а заканчиваются где-то не там."
 		/>
 
-		<div class="box">
-			<ul class="m-0 flex list-none flex-col gap-4 p-0">
-				{
-					experiments.map((project) => (
-						<li class="flex items-baseline justify-between gap-4">
-							<span class="text-[1.1rem] text-ink">* {project.title}</span>
-							<span class="meta shrink-0">
-								{project.state === 'done' ? 'готово' : 'в работе'}
-							</span>
-						</li>
-					))
-				}
-			</ul>
-		</div>
+		{
+			experiments.length > 0 ? (
+				<div class="box">
+					<ul class="m-0 flex list-none flex-col gap-4 p-0">
+						{experiments.map((project) => (
+							<li class="flex items-baseline justify-between gap-4">
+								<span class="text-[1.1rem] text-ink">* {project.title}</span>
+								<span class="meta shrink-0">
+									{project.state === 'done' ? 'готово' : 'в работе'}
+								</span>
+							</li>
+						))}
+					</ul>
+				</div>
+			) : (
+				<p class="text-soft">Пока пусто. Эксперименты появятся здесь.</p>
+			)
+		}
 
 		<p class="meta">Раздел только начинается.</p>
 	</div>
