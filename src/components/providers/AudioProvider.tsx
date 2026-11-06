@@ -34,12 +34,17 @@ export function AudioProvider({ src, children }: { src: string; children: ReactN
 		if (!audio) return;
 
 		if (fadeRef.current !== null) cancelAnimationFrame(fadeRef.current);
+
 		const start = audio.volume;
+		const end = Math.min(1, Math.max(0, target));
 		const startedAt = performance.now();
+		const length = Math.max(1, duration);
 
 		const step = (now: number) => {
-			const progress = Math.min(1, (now - startedAt) / duration);
-			audio.volume = start + (target - start) * progress;
+			// rAF-таймстамп может быть чуть раньше performance.now(), из-за чего
+			// progress уходил в минус, а audio.volume не принимает значения вне [0, 1].
+			const progress = Math.min(1, Math.max(0, (now - startedAt) / length));
+			audio.volume = Math.min(1, Math.max(0, start + (end - start) * progress));
 
 			if (progress < 1) {
 				fadeRef.current = requestAnimationFrame(step);
