@@ -1,0 +1,26 @@
+{
+	"intro": "* мир. комната, вещи, ссылки. заходи, не разувайся.",
+	"hotspots": {
+		"window": { "label": "ОКНО", "title": "сейчас" },
+		"desk": { "label": "СТОЛ", "title": "лаборатория" },
+		"shelf": { "label": "ПОЛКА", "title": "сад" },
+		"door": { "label": "ДВЕРЬ", "title": "ссылки" }
+	},
+	"links": [
+		{
+			"label": "GitHub",
+			"href": "https://github.com/purrciel",
+			"note": "код и эксперименты"
+		},
+		{
+			"label": "RSS",
+			"href": "/feed.xml",
+			"note": "сад в ридере"
+		},
+		{
+			"label": "На главную",
+			"href": "/",
+			"note": "к коту"
+		}
+	]
+}

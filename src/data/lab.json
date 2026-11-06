@@ -1,1 +1,11 @@
-[]
+[
+	{
+		"title": "purrciel.baby",
+		"description": "Этот сайт: пиксельный личный мир на Next.js с непрерывной музыкой, command palette и садом заметок.",
+		"status": "active",
+		"stack": ["Next.js", "React", "Tailwind"],
+		"year": 2026,
+		"href": "https://purrciel.baby",
+		"repo": "https://github.com/purrciel/purrciel.baby"
+	}
+]
