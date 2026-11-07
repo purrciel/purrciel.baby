@@ -7,11 +7,8 @@ export function PageTransition({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
 
 	return (
-		<>
-			<div key={`wipe-${pathname}`} className="route-wipe" aria-hidden="true" />
-			<div key={`page-${pathname}`} className="page-enter flex-1">
-				{children}
-			</div>
-		</>
+		<div key={pathname} className="page-enter flex flex-1 flex-col">
+			{children}
+		</div>
 	);
 }

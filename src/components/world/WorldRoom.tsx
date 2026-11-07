@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useSound } from '@/components/providers/SoundProvider';
 import { Heart } from '@/components/ui/Heart';
 import { PixelCat } from '@/components/ui/PixelCat';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 
 export type RoomLink = {
 	label: string;

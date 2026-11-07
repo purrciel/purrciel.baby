@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 
 export function DialogueBox({
 	text,
@@ -16,8 +16,13 @@ export function DialogueBox({
 	children?: ReactNode;
 }) {
 	return (
-		<div className="box relative w-full">
-			<p className="m-0 min-h-[4.2em] text-[1.2rem] leading-[1.6] text-white">
+		<div className="panel relative w-full overflow-hidden p-5 sm:p-6">
+			<div className="mb-4 flex items-center justify-between gap-4 border-b border-line pb-3">
+				<span className="pixel-label text-soul">✦ диалог</span>
+				<span className="meta">encounter · 01</span>
+			</div>
+
+			<p className="m-0 min-h-[4.5em] text-lg leading-relaxed text-ink sm:text-xl">
 				<span className="sr-only" aria-live="polite">
 					{srText}
 				</span>
@@ -30,7 +35,7 @@ export function DialogueBox({
 
 			<span
 				className={cn(
-					'next pointer-events-none absolute bottom-2 right-4 text-sm text-white',
+					'pointer-events-none absolute bottom-3 right-5 font-mono text-xs text-soul',
 					!nextVisible && 'hidden',
 				)}
 				aria-hidden="true"

@@ -1,20 +1,40 @@
 'use client';
 
-import { Command } from 'cmdk';
+import {
+	Bug,
+	Copy,
+	FileText,
+	FlaskConical,
+	Home,
+	Link2,
+	Music2,
+	Sprout,
+	Volume2,
+	Waypoints,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
 	createContext,
 	useCallback,
 	useContext,
 	useEffect,
-	useRef,
 	useState,
 	type ReactNode,
 } from 'react';
 
-import { Heart } from '@/components/ui/Heart';
 import { useAudio } from '@/components/providers/AudioProvider';
 import { useSound } from '@/components/providers/SoundProvider';
+import {
+	Command,
+	CommandDialog,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+	CommandSeparator,
+	CommandShortcut,
+} from '@/components/ui/command';
 import { useStoredFlag } from '@/lib/useStoredFlag';
 
 export type PaletteNote = {
@@ -38,11 +58,11 @@ type CommandPaletteContextValue = {
 const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(null);
 
 const staticPages = [
-	{ href: '/', label: 'на главную', hint: 'кот' },
-	{ href: '/garden', label: 'сад', hint: 'заметки' },
-	{ href: '/lab', label: 'лаборатория', hint: 'проекты' },
-	{ href: '/world', label: 'мир', hint: 'комната' },
-	{ href: '/#now', label: 'сейчас', hint: 'чем я занят' },
+	{ href: '/', label: 'на главную', hint: 'кот', icon: Home },
+	{ href: '/garden', label: 'сад', hint: 'заметки', icon: Sprout },
+	{ href: '/lab', label: 'лаборатория', hint: 'проекты', icon: FlaskConical },
+	{ href: '/world', label: 'мир', hint: 'комната', icon: Waypoints },
+	{ href: '/#now', label: 'сейчас', hint: 'чем я занят', icon: Link2 },
 ];
 
 export function CommandPaletteProvider({
@@ -55,8 +75,6 @@ export function CommandPaletteProvider({
 	children: ReactNode;
 }) {
 	const router = useRouter();
-	const dialogRef = useRef<HTMLDialogElement>(null);
-	const inputRef = useRef<HTMLInputElement>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	const [secret] = useStoredFlag('purrciel:secret');
 	const { playing, toggle: toggleMusic } = useAudio();
@@ -75,24 +93,6 @@ export function CommandPaletteProvider({
 		window.addEventListener('keydown', onKeyDown);
 		return () => window.removeEventListener('keydown', onKeyDown);
 	}, []);
-
-	useEffect(() => {
-		const dialog = dialogRef.current;
-		if (!dialog) return;
-
-		if (isOpen && !dialog.open) {
-			dialog.showModal();
-			document.body.style.overflow = 'hidden';
-			requestAnimationFrame(() => inputRef.current?.focus());
-		} else if (!isOpen && dialog.open) {
-			dialog.close();
-			document.body.style.overflow = '';
-		}
-
-		return () => {
-			document.body.style.overflow = '';
-		};
-	}, [isOpen]);
 
 	const go = useCallback(
 		(href: string) => {
@@ -135,135 +135,145 @@ export function CommandPaletteProvider({
 		<CommandPaletteContext.Provider value={{ open }}>
 			{children}
 
-			<dialog
-				ref={dialogRef}
-				className="cmd-dialog"
-				aria-label="Командная палитра"
-				onClose={() => setIsOpen(false)}
-				onClick={(event) => {
-					if (event.target === event.currentTarget) setIsOpen(false);
-				}}
+			<CommandDialog
+				open={isOpen}
+				onOpenChange={setIsOpen}
+				title="Командная палитра"
+				description="Поиск по разделам, заметкам и проектам"
+				className="max-w-2xl border border-line bg-popover/95 shadow-2xl shadow-black/50 backdrop-blur-2xl sm:max-w-2xl"
 			>
-				{isOpen && (
-					<Command label="Команды" loop className="cmd">
-						<Command.Input
-							ref={inputRef}
-							placeholder="куда идём?"
-							className="cmd-input"
-						/>
+				<Command
+					label="Команды"
+					loop
+					className="rounded-[calc(var(--radius)-2px)] bg-transparent p-0"
+				>
+					<CommandInput placeholder="куда идём?" />
 
-						<Command.List className="cmd-list">
-							<Command.Empty className="cmd-empty">
-								Ничего не найдено. Даже кот.
-							</Command.Empty>
+					<CommandList className="max-h-[min(58svh,26rem)] px-1 pb-1">
+						<CommandEmpty className="py-10 font-mono text-[0.7rem] uppercase tracking-[0.12em] text-faint">
+							Ничего не найдено. Даже кот.
+						</CommandEmpty>
 
-							<Command.Group heading="разделы" className="cmd-group">
-								{staticPages.map((page) => (
-									<Command.Item
+						<CommandGroup heading="разделы">
+							{staticPages.map((page) => {
+								const Icon = page.icon;
+
+								return (
+									<CommandItem
 										key={page.href}
 										value={`${page.label} ${page.hint} ${page.href}`}
-										className="cmd-item"
 										onSelect={() => go(page.href)}
+										className="gap-3 rounded-lg px-3 py-2.5"
 									>
-										<Heart />
+										<Icon className="text-faint" />
 										<span>{page.label}</span>
-										<small>{page.hint}</small>
-									</Command.Item>
-								))}
-								{secret && (
-									<Command.Item
-										value="debug секрет комната"
-										className="cmd-item"
-										onSelect={() => go('/debug')}
-									>
-										<Heart />
-										<span>debug-комната</span>
-										<small>секрет</small>
-									</Command.Item>
-								)}
-							</Command.Group>
+										<CommandShortcut>{page.hint}</CommandShortcut>
+									</CommandItem>
+								);
+							})}
+							{secret && (
+								<CommandItem
+									value="debug секрет комната"
+									onSelect={() => go('/debug')}
+									className="gap-3 rounded-lg px-3 py-2.5"
+								>
+									<Bug className="text-soul" />
+									<span>debug-комната</span>
+									<CommandShortcut>секрет</CommandShortcut>
+								</CommandItem>
+							)}
+						</CommandGroup>
 
-							{notes.length > 0 && (
-								<Command.Group heading="сад" className="cmd-group">
+						{notes.length > 0 && (
+							<>
+								<CommandSeparator />
+								<CommandGroup heading="сад">
 									{notes.map((note) => (
-										<Command.Item
+										<CommandItem
 											key={note.slug}
 											value={`${note.title} ${note.description} ${note.tags.join(' ')}`}
-											className="cmd-item"
 											onSelect={() => go(`/garden/${note.slug}`)}
+											className="gap-3 rounded-lg px-3 py-2.5"
 										>
-											<Heart />
-											<span>{note.title}</span>
-											<small>заметка</small>
-										</Command.Item>
+											<FileText className="text-faint" />
+											<span className="truncate">{note.title}</span>
+											<CommandShortcut>заметка</CommandShortcut>
+										</CommandItem>
 									))}
-								</Command.Group>
-							)}
+								</CommandGroup>
+							</>
+						)}
 
-							{projects.length > 0 && (
-								<Command.Group heading="лаборатория" className="cmd-group">
+						{projects.length > 0 && (
+							<>
+								<CommandSeparator />
+								<CommandGroup heading="лаборатория">
 									{projects.map((project) => (
-										<Command.Item
+										<CommandItem
 											key={project.title}
 											value={`${project.title} ${project.description}`}
-											className="cmd-item"
 											onSelect={() => {
 												const href = project.href ?? project.repo;
 												if (href) go(href);
 											}}
+											className="gap-3 rounded-lg px-3 py-2.5"
 										>
-											<Heart />
-											<span>{project.title}</span>
-											<small>проект</small>
-										</Command.Item>
+											<FlaskConical className="text-faint" />
+											<span className="truncate">{project.title}</span>
+											<CommandShortcut>проект</CommandShortcut>
+										</CommandItem>
 									))}
-								</Command.Group>
-							)}
+								</CommandGroup>
+							</>
+						)}
 
-							<Command.Group heading="звук и ссылки" className="cmd-group">
-								<Command.Item
-									value="музыка включить выключить трек"
-									className="cmd-item"
-									onSelect={toggleMusic}
-								>
-									<span aria-hidden="true">♪</span>
-									<span>{playing ? 'выключить музыку' : 'включить музыку'}</span>
-									<small>{playing ? 'вкл' : 'выкл'}</small>
-								</Command.Item>
-								<Command.Item
-									value="звук эффекты включить выключить"
-									className="cmd-item"
-									onSelect={toggleSound}
-								>
-									<span aria-hidden="true">▮</span>
-									<span>{soundOn ? 'выключить звуки' : 'включить звуки'}</span>
-									<small>{soundOn ? 'вкл' : 'выкл'}</small>
-								</Command.Item>
-								<Command.Item
-									value="скопировать ссылку url"
-									className="cmd-item"
-									onSelect={() => void copyLink()}
-								>
-									<span aria-hidden="true">⧉</span>
-									<span>скопировать ссылку</span>
-								</Command.Item>
-							</Command.Group>
-						</Command.List>
+						<CommandSeparator />
+						<CommandGroup heading="звук и ссылки">
+							<CommandItem
+								value="музыка включить выключить трек"
+								onSelect={toggleMusic}
+								className="gap-3 rounded-lg px-3 py-2.5"
+							>
+								<Music2 className="text-faint" />
+								<span>{playing ? 'выключить музыку' : 'включить музыку'}</span>
+								<CommandShortcut>{playing ? 'вкл' : 'выкл'}</CommandShortcut>
+							</CommandItem>
+							<CommandItem
+								value="звук эффекты включить выключить"
+								onSelect={toggleSound}
+								className="gap-3 rounded-lg px-3 py-2.5"
+							>
+								<Volume2 className="text-faint" />
+								<span>{soundOn ? 'выключить звуки' : 'включить звуки'}</span>
+								<CommandShortcut>{soundOn ? 'вкл' : 'выкл'}</CommandShortcut>
+							</CommandItem>
+							<CommandItem
+								value="скопировать ссылку url"
+								onSelect={() => void copyLink()}
+								className="gap-3 rounded-lg px-3 py-2.5"
+							>
+								<Copy className="text-faint" />
+								<span>скопировать ссылку</span>
+							</CommandItem>
+						</CommandGroup>
+					</CommandList>
 
-						<div className="cmd-footer" aria-hidden="true">
-							<span>
-								<kbd className="cmd-kbd">↑↓</kbd> навигация
-							</span>
-							<span>
-								<kbd className="cmd-kbd">↵</kbd> выбрать
-							</span>
-							<span>
-								<kbd className="cmd-kbd">esc</kbd> закрыть
-							</span>
-						</div>
-					</Command>
-				)}
-			</dialog>
+					<div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line px-4 py-3 font-mono text-[0.6rem] uppercase tracking-[0.12em] text-faint">
+						<span className="flex items-center gap-1.5">
+							<kbd className="rounded border border-line px-1.5 py-0.5">↑↓</kbd>
+							навигация
+						</span>
+						<span className="flex items-center gap-1.5">
+							<kbd className="rounded border border-line px-1.5 py-0.5">↵</kbd>
+							выбрать
+						</span>
+						<span className="flex items-center gap-1.5">
+							<kbd className="rounded border border-line px-1.5 py-0.5">esc</kbd>
+							закрыть
+						</span>
+					</div>
+				</Command>
+			</CommandDialog>
 		</CommandPaletteContext.Provider>
 	);
 }

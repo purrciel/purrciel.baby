@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Heart } from '@/components/ui/Heart';
 import { TagList } from '@/components/ui/TagList';
 import { typeLabels } from '@/data/garden';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import type { NoteSummary } from '@/lib/content';
 
 function pluralNotes(count: number): string {

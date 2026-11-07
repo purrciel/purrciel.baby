@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
+import { Aura } from '@/components/layout/Aura';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { PageTransition } from '@/components/layout/PageTransition';
@@ -12,18 +13,27 @@ import { AudioProvider } from '@/components/providers/AudioProvider';
 import { CommandPaletteProvider } from '@/components/providers/CommandPaletteProvider';
 import { SoundProvider } from '@/components/providers/SoundProvider';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { getAllNotes } from '@/lib/content';
 import { labProjects } from '@/lib/lab';
 import { site } from '@/lib/site';
+import { cn } from '@/lib/utils';
 
 import './globals.css';
 
-const pixelify = localFont({
-	src: [
-		{ path: '../assets/fonts/pixelify-sans-400.ttf', weight: '400', style: 'normal' },
-		{ path: '../assets/fonts/pixelify-sans-700.ttf', weight: '700', style: 'normal' },
-	],
-	variable: '--font-pixelify',
+const geistSans = localFont({
+	src: '../assets/fonts/geist-variable.ttf',
+	weight: '100 900',
+	style: 'normal',
+	variable: '--font-geist-sans',
+	display: 'swap',
+});
+
+const geistMono = localFont({
+	src: '../assets/fonts/geist-mono-variable.ttf',
+	weight: '100 900',
+	style: 'normal',
+	variable: '--font-geist-mono',
 	display: 'swap',
 });
 
@@ -46,7 +56,7 @@ export const metadata: Metadata = {
 	authors: [{ name: site.author.name, url: site.author.url }],
 	creator: site.author.name,
 	publisher: site.author.name,
-	keywords: ['purrciel', 'личный сайт', 'заметки', 'пиксельный', 'undertale', 'next.js'],
+	keywords: ['purrciel', 'личный сайт', 'заметки', 'undertale', 'next.js', 'дизайн'],
 	alternates: {
 		canonical: '/',
 		types: {
@@ -97,7 +107,7 @@ export const viewport: Viewport = {
 	width: 'device-width',
 	initialScale: 1,
 	viewportFit: 'cover',
-	themeColor: '#000000',
+	themeColor: '#070709',
 	colorScheme: 'dark',
 };
 
@@ -133,15 +143,16 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 	return (
 		<html
 			lang={site.lang}
-			className={`${pixelify.variable} ${pressStart.variable}`}
+			className={cn(geistSans.variable, geistMono.variable, pressStart.variable, 'dark')}
 			data-scroll-behavior="smooth"
 		>
-			<body className="flex min-h-svh flex-col">
+			<body className="bg-background font-sans text-foreground antialiased">
+				<Aura />
 				<JsonLd data={websiteJsonLd} />
 
 				<a
 					href="#content"
-					className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded focus:border-4 focus:border-line focus:bg-paper focus:px-3 focus:py-2 focus:text-sm"
+					className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:text-primary-foreground"
 				>
 					К содержимому
 				</a>
@@ -149,18 +160,21 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 				<AudioProvider src="/audio/theme.mp3">
 					<SoundProvider>
 						<CommandPaletteProvider notes={notes} projects={projects}>
-							<Header />
+							<TooltipProvider>
+								<div className="relative z-10 flex min-h-svh flex-col">
+									<Header />
 
-							<main id="content" className="flex flex-1 flex-col">
-								<PageTransition>{children}</PageTransition>
-							</main>
+									<main id="content" className="flex flex-1 flex-col">
+										<PageTransition>{children}</PageTransition>
+									</main>
 
-							<Footer />
+									<Footer />
+								</div>
+							</TooltipProvider>
 						</CommandPaletteProvider>
 					</SoundProvider>
 				</AudioProvider>
 
-				<div className="scanlines" aria-hidden="true" />
 				<Analytics />
 				<SpeedInsights />
 			</body>

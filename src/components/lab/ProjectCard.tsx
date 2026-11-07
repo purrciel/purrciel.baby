@@ -1,6 +1,6 @@
 import type { LabProject } from '@/lib/lab';
 import { statusLabels } from '@/lib/lab';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 
 const statusStyles: Record<LabProject['status'], string> = {
 	active: 'border-choose text-choose',

@@ -1,7 +1,9 @@
 'use client';
 
+import { Music2 } from 'lucide-react';
+
 import { useAudio } from '@/components/providers/AudioProvider';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 
 function Equalizer() {
 	return (
@@ -36,11 +38,12 @@ export function MusicPlayer({
 				aria-pressed={playing}
 				title={title}
 				className={cn(
-					'border-0 bg-transparent p-0 text-left font-[inherit] text-[inherit] uppercase tracking-[inherit] transition-colors hover:text-choose disabled:opacity-60',
-					playing && 'text-choose',
+					'meta inline-flex items-center gap-2 border-0 bg-transparent p-0 text-left transition-colors hover:text-ink disabled:opacity-60',
+					playing && 'text-soul',
 					className,
 				)}
 			>
+				<Music2 className="size-3.5" />
 				{error ? '♪ нет трека' : playing ? '♪ музыка: вкл' : '♪ музыка: выкл'}
 			</button>
 		);
@@ -54,21 +57,28 @@ export function MusicPlayer({
 			aria-pressed={playing}
 			title={title}
 			className={cn(
-				'inline-flex items-center gap-3 rounded-lg border-4 px-4 py-3 font-serif text-[0.8rem] leading-none transition-colors',
+				'inline-flex items-center gap-3 rounded-full border px-4 py-2.5 font-mono text-[0.68rem] uppercase tracking-[0.12em] transition-colors',
 				playing
-					? 'border-choose text-choose'
-					: 'border-white text-white hover:border-choose hover:text-choose',
+					? 'border-soul/45 bg-soul-soft text-ink'
+					: 'border-line bg-white/[0.02] text-soft hover:border-line-strong hover:text-ink',
 				error && 'cursor-default opacity-60',
 				className,
 			)}
 		>
-			{playing ? (
-				<Equalizer />
-			) : (
-				<span aria-hidden="true" className="text-lg leading-none">
-					♪
-				</span>
-			)}
+			<span
+				className={cn(
+					'flex size-7 items-center justify-center rounded-full border',
+					playing ? 'border-soul/50 text-soul' : 'border-line text-faint',
+				)}
+			>
+				{playing ? (
+					<Equalizer />
+				) : (
+					<span aria-hidden="true" className="text-sm leading-none">
+						♪
+					</span>
+				)}
+			</span>
 			<span>{label}</span>
 		</button>
 	);

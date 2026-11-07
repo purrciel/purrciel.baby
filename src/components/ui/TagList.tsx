@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 
 export function TagList({
 	tags,
@@ -20,7 +20,10 @@ export function TagList({
 			{tags.map((tag) => (
 				<li key={tag}>
 					{link ? (
-						<Link href={`/garden?tag=${encodeURIComponent(tag)}`} className="tag hover:border-choose hover:text-choose">
+						<Link
+							href={`/garden?tag=${encodeURIComponent(tag)}`}
+							className="tag hover:border-line-strong hover:text-ink"
+						>
 							#{tag}
 						</Link>
 					) : onSelect ? (
